@@ -1,0 +1,5 @@
+./misc/main test_inputs/student_mazes/solvable/reg_5x9.txt < test_inputs/student_mazes/solvable/reg_5x9_solution.txt > misc/tmp
+./misc/main test_inputs/student_mazes/solvable/reg_6x5.txt < test_inputs/student_mazes/solvable/reg_6x5_solution.txt > misc/tmp
+./misc/main test_inputs/student_mazes/solvable/reg_10x6.txt < test_inputs/student_mazes/solvable/reg_10x6_solution.txt > misc/tmp
+./misc/main test_inputs/student_mazes/solvable/reg_9x8.txt < test_inputs/student_mazes/solvable/reg_9x8_solution.txt > misc/tmp
+./misc/main test_inputs/student_mazes/solvable/reg_5x5.txt < test_inputs/student_mazes/solvable/reg_5x5_solution.txt > misc/tmp
