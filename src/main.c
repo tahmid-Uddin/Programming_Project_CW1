@@ -8,36 +8,32 @@ typedef struct Player {
     int yPosition; 
 } Player;
 
-int validateFileName(char filename) {
-    return 0;
+// 
+int validateFileName(char *filename) {
+    return 1;
 }
 
 int readFile(char filename) {
-    return 0;
+    return 1;
 }
 
 int drawMaze(char maze) {
-    return 0;
-}
-
-int movePlayer() {
-    return 0;
+    return 1;
 }
 
 int checkInput() {
-    return 0;
+    return 1;
 }
 
 int checkValidMove() {
-    return 0;    
+    return 1;    
 }
 
-
-int add(int x, int y) {
-    return x + y;
+int movePlayer() {
+    return 1;
 }
 
 
 int main(int argc, char *argv[]) {
-    return 0;
+    return 1;
 }

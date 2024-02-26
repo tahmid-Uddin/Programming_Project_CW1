@@ -10,4 +10,4 @@ with open(file_name, 'w') as file:
     for filename in directory:
         filename = filename.split(".")[0]
         file.write(f"./misc/main test_inputs/student_mazes/valid/{filename}.txt < test_inputs/movement_inputs/input_{counter}.txt > misc/tmp\n")
-    counter += 1
+        counter += 1
