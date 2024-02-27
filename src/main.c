@@ -8,13 +8,6 @@ const int MIN_WIDTH = 5;
 const int MAX_HEIGHT = 100;
 const int MAX_WIDTH = 100;
 
-
-typedef struct Player {
-    int xPosition;
-    int yPosition; 
-} Player;
-
-
 void readFile(char *filename, char *maze) {
     /*
         Reads the contents of the file into the maze array.
@@ -134,7 +127,8 @@ int main(int argc, char *argv[]) {
         If 0 is returned, then the user is prompted to enter another input.
         If 1 is returned, the input is valid.
 
-        Calls the checkValidMove() function to check if the move is valid.
+        If input is M or m, then the drawMaze() function is called.
+        Else, calls the checkValidMove() function to check if the move is valid.
         If 0 is returned, then the user is prompted to enter another input.
         If 1 is returned, the move is valid.
         If 2 is returned, the game is over.

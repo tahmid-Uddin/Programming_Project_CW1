@@ -8,6 +8,8 @@ for i in range(1,26):
     for i in range(0, random.randint(10,150)):
         string += random.choice(movement)
 
+    string += "END\n"
+
     with open(file_name, 'w') as file:
         file.write(string)
         

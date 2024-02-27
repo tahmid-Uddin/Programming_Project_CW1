@@ -1,6 +1,11 @@
 #ifndef FUNC
 #define FUNC
 
+typedef struct Player {
+    int xPosition;
+    int yPosition; 
+} Player;
+
 void readFile(char *filename, char *maze);
 int validateMaze(char *maze, Player *player);
 void drawMaze(char *maze);

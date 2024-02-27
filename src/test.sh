@@ -379,22 +379,25 @@ fi
 
 # Loops through the mazes in the valid mazes folder and runs
 # some random user inputs to check if an unexpected error causes
-# the program to crash - terminated programs ususally return 0.
-# Expected: no unexpected errors - all inputs run correctly.
+# the program to crash. If no errors, the final input will be 
+# "END", which is an invalid input, hence will raise the invalid 
+# user input error.
+# Expected: no unexpected errors - all inputs run correctly, and 
+# Invalid user input error raised at the end.
 filename="test_inputs/walking_around_mazes.txt"
 while IFS= read -r line
 do
     ((all_counter++))
     $line
-
     printf "Test $all_counter - Walking around a random maze"
-    if [[ "$?" == "0" ]]
+    if grep -q "Error: Invalid user input" misc/tmp
     then
-        echo -e "\e[31m   FAIL\e[0m" 
-    else
         echo -e "\e[32m   PASS\e[0m"
         ((pass_counter++))
+    else
+        echo -e "\e[31m   FAIL\e[0m"
     fi
+
 
 done < "$filename"
 
