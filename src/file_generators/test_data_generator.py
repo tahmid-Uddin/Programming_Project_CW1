@@ -1,4 +1,4 @@
-#Created by Chat-gpt, slightly edited functionality
+#Created by Chat-gpt - slightly edited functionality to better fit needs
 #Prompt:
 #   Mazes are made up of four characters:
 #   ‘#’ - A wall which the player cannot move across
