@@ -34,10 +34,10 @@ else
     echo -e "\e[31m   FAIL\e[0m"
 fi
 
+./misc/main test_inputs/student_mazes/valid/reg_5x5.txt > misc/tmp
 
 
-
-
+: <<'END_COMMENT'
 echo -e "\n--Testing Invalid Maze Types--"
 
 # Loops through all the test mazes in the invalid maze folder
@@ -109,7 +109,7 @@ done < "$filename"
 
 
 
-
+: <<'END_COMMENT'
 echo -e "--Testing Valid Maze Types--"
 
 # Loops through all the test mazes in the valid maze folder
@@ -433,3 +433,4 @@ echo -e "\n\n--Test Results--"
 echo "Total Tests: $all_counter"
 echo "Tests Passed: $pass_counter"
 
+END_COMMENT

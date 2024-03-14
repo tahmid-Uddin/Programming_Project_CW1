@@ -1,13 +1,16 @@
 #ifndef FUNC
 #define FUNC
 
-typedef struct Player {
+struct player {
     int xPosition;
     int yPosition; 
-} Player;
+};
 
-void readFile(char *filename, char *maze);
-int validateMaze(char *maze, Player *player);
+typedef struct player Player;
+
+int readFile(char *filename);
+int validateMazeSize(char *filename);
+int validateMazeContents(char *filename, char *maze, Player *player);
 void drawMaze(char *maze);
 int checkInput(char *input);
 int checkValidMove(char input, char *maze, Player *player);
