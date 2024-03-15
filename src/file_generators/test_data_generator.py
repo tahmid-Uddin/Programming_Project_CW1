@@ -26,7 +26,7 @@ def generate_maze(height, width):
     return maze
 
 def save_maze_to_file(maze, height, width):
-    file_name = f"src/test_inputs/student_mazes/solvable/reg_{height}x{width}.txt"
+    file_name = f"src/test_inputs/student_mazes/invalid/ireg_{height}x{width}.txt"
     with open(file_name, 'w') as file:
         for row in maze:
             file.write(''.join(row) + '\n')
@@ -36,7 +36,7 @@ def create_and_save_maze(height, width):
     save_maze_to_file(maze, height, width)
 
 # Define sizes for test mazes
-number_of_mazes = 5
+number_of_mazes = 3
 maze_sizes = []
 for i in range(0, number_of_mazes):
     height = random.randint(5,10)

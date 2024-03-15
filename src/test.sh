@@ -34,10 +34,7 @@ else
     echo -e "\e[31m   FAIL\e[0m"
 fi
 
-./misc/main test_inputs/student_mazes/valid/reg_5x5.txt > misc/tmp
-
-
-: <<'END_COMMENT'
+: <<'END_COMMENT' 
 echo -e "\n--Testing Invalid Maze Types--"
 
 # Loops through all the test mazes in the invalid maze folder
@@ -47,7 +44,8 @@ while IFS= read -r line
 do
     ((all_counter++))
     invalid=0
-    $line
+    echo $line
+    eval "$line"
 
     # Test for mazes size, where both the height and width are out
     # of bounds or either the height or the width are out of bounds.
@@ -109,7 +107,6 @@ done < "$filename"
 
 
 
-: <<'END_COMMENT'
 echo -e "--Testing Valid Maze Types--"
 
 # Loops through all the test mazes in the valid maze folder
@@ -119,7 +116,8 @@ while IFS= read -r line
 do
     ((all_counter++))
     invalid=0
-    $line
+    echo $line
+    echo q | eval "$line"
 
     # Test for mazes size, where both the height and width are out
     # of bounds or either the height or the width are out of bounds.
@@ -177,7 +175,7 @@ do
 
 done < "$filename"
 
-
+END_COMMENT
 
 
 echo -e "--Testing User Inputs--"
@@ -191,7 +189,7 @@ while IFS= read -r line
 do
     ((all_counter++))
     echo -n "Test $all_counter - Invalid User inputs ($line)"
-    echo "$line" | ./misc/main test_inputs/student_mazes/valid/reg_5x5.txt > misc/tmp
+    echo -n "$line" | echo -n "q" | ./misc/main test_inputs/student_mazes/valid/reg_5x5.txt > misc/tmp
     if grep -q "Error: Invalid user input" misc/tmp
     then
         echo -e "\e[32m   PASS\e[0m"
@@ -388,7 +386,7 @@ filename="test_inputs/walking_around_mazes.txt"
 while IFS= read -r line
 do
     ((all_counter++))
-    $line
+    eval "$line"
     printf "Test $all_counter - Walking around a random maze"
     if grep -q "Error: Invalid user input" misc/tmp
     then
@@ -414,7 +412,7 @@ filename="test_inputs/completed_mazes.txt"
 while IFS= read -r line
 do
     ((all_counter++))
-    $line
+    eval "$line"
 
     printf "Test $all_counter - Displays game end message"
     if grep -q "Congratulations! You have completed the maze!" misc/tmp

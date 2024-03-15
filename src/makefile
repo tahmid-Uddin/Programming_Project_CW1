@@ -6,7 +6,7 @@ SRCS = $(wildcard *.c)
 OBJS = $(SRCS:.c=.o)
 
 maze: $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o misc/$@ $^
 
 clean:
 	rm -f maze $(OBJS)
