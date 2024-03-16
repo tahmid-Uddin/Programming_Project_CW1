@@ -19,6 +19,8 @@ struct array2D {
     int cols;
     int exitXPosition;
     int exitYPosition;
+    int startXPosition;
+    int startYPosition;
 };
 
 typedef struct array2D Array2D;
@@ -26,7 +28,7 @@ typedef struct array2D Array2D;
 int readFile(char *filename);
 int validateMazeSize(char *filename);
 int validateMazeContents(char *filename, Array2D *maze, Player *player);
-void drawMaze(Array2D *maze);
+void drawMaze(Array2D *maze, Player *player);
 int checkInput(char input[]);
 int checkValidMove(char input, Array2D *maze, Player *player);
 void movePlayer(char input, Player *player, char *maze, int newXPosition, int newYPosition);

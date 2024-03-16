@@ -7,7 +7,6 @@
 int readFile(char *filename) {
     /*
         Checks if the file exists and return 2 if it doesn't.
-        Counts the number of rows and colums of the file and returns the values.
         If file doesn't exist, display "Error: File doesn't exist".
     */
     FILE *fptr;
@@ -25,8 +24,8 @@ int readFile(char *filename) {
 
 int validateMazeSize(char *filename) {
     /*
-        Reads the contents of the maze to see if the maze is valid.
-        - Returns 1 if the maze is valid, 0 otherwise.
+        Reads the numbers of rows and cols and validates its size.
+        - Returns the size of the maze if its valid, other wise returns 3
 
         Checks if the maze is within the bounds set by the constants.
             - "Error: Invalid Maze size"
@@ -63,7 +62,6 @@ int validateMazeSize(char *filename) {
     }
 
     // Checks that the rows and columns are in the valid range.
-    printf("%d rows and %d columns", rows, cols);
     if (!(rows >= MIN_HEIGHT && rows <= MAX_HEIGHT && cols - 1 >= MIN_HEIGHT && cols - 1 <= MAX_HEIGHT)) {
         printf("Error: Invalid Maze size\n");
         fclose(fptr);
@@ -71,7 +69,8 @@ int validateMazeSize(char *filename) {
     }
 
     fclose(fptr);
-    return (rows * 1000) + cols - 1;
+    // Makes the rows and columns a single value, to be later decoded using division and modulo operator
+    return (rows * 1000) + cols - 1; 
 }
 
 
@@ -79,7 +78,7 @@ int validateMazeContents(char *filename, Array2D *maze, Player *player) {
     /*
         Reads the contents of the maze to see if the maze is valid.
         Updates the players x and y position to where the S character is in the maze.
-        - Returns 1 if the maze is valid, 0 otherwise.
+        - Returns 0 if the maze is valid, 3 otherwise.
 
         Checks if the maze has any invalid characters.
             - "Error: Unknown Characters in the Maze"
@@ -105,6 +104,8 @@ int validateMazeContents(char *filename, Array2D *maze, Player *player) {
             if (line[j] == 'S') {
                 player->xPosition = j;
                 player->yPosition = i;
+                maze->startXPosition = j;
+                maze->startYPosition = i;
                 sCounter++;
             }
 
@@ -119,7 +120,6 @@ int validateMazeContents(char *filename, Array2D *maze, Player *player) {
             }
 
             else {
-                printf("%c", line[j]);
                 printf("Error: Unknown Characters in the Maze\n");
                 fclose(fptr);
                 return 3;
@@ -141,9 +141,9 @@ int validateMazeContents(char *filename, Array2D *maze, Player *player) {
 int checkInput(char input[]) {
     /*
         Checks the user input to see if it is valid.
-        - Returns 1 if the input is valid, 0 otherwise.
+        - Returns 0 if the input is valid, 1 otherwise.
 
-        Valid inputs are W,A,S,D,M,w,a,s,d,m.
+        Valid inputs are W,A,S,D,M,w,a,s,d,m,q.
         All other characters are invalid.
 
         The relavent error message will be printed for invalid inputs.
@@ -157,6 +157,10 @@ int checkInput(char input[]) {
         return 0;
     }
 
+    else if (input[0] == 'q') {
+        return 1;
+    }
+
     printf("Error: Invalid user input\n");
     return 1;
 }
@@ -165,23 +169,22 @@ int checkInput(char input[]) {
 int checkValidMove(char input, Array2D *maze, Player *player) {
     /*
         Checks the square that the user is trying to move
-        to see if it is valid. Valid squares are blank spaces,
-        S characters, and E characters ONLY.
+        to see if it is valid. Valid squares are blank spaces
+        and E characters ONLY.
 
         The relavent error message will be printed for invalid inputs.
             - "You cannot walk into a wall. Try moving somewhere else!"
             - "You cannot walk off the edge of the maze. Try moving somewhere else!"
     
-
-        Calculates the new x and y position and calls movePlayer() to move the player 
-        if the move is valid.
-
-        Returns 1 if the square is valid, 0 otherwise and 2 if the game is over.
+        Calls the CheckGameOver function.
+        Calculates the new x and y position and moves the player.
+        Returns 0 if the move is valid, 1 otherwise and 4 if the game is over.
     */
+
     int xChange; int yChange;
 
     if (input == 'M' || input == 'm') {
-        drawMaze(maze);
+        drawMaze(maze, player);
         return 0;
     }
 
@@ -223,55 +226,45 @@ int checkValidMove(char input, Array2D *maze, Player *player) {
         return 1;
     }
 
-    maze->data[player->yPosition][player->xPosition] = ' ';
     player->xPosition += xChange;
     player->yPosition += yChange;
 
     if (checkGameOver(maze, player->xPosition, player->yPosition) == 4) {
         return 4;
     }
-
-    maze->data[player->yPosition][player->xPosition] = 'S';
     
     return 0;    
 }
 
 
-void movePlayer(char input, Player *player, char *maze, int newXPosition, int newYPosition) {
-    /*
-        -Makes the current player position in the maze a blank space.
-        -Updates the x and y position of the player struct.
-        -Calls the checkGameOver() function to see if the place the user is
-        trying to move to is a the exit.
-        -In the new x and y position in the maze, place an "X", which
-        shows that the player has moved.
-
-        Returns 1 if the move is normal, 2 if the game is over.
-    */
-}
-
-
-void drawMaze(Array2D *maze) {
+void drawMaze(Array2D *maze, Player *player) {
     /*
         Prints out the maze to the screen.
     */
 
+    printf("\n");
     for (int i = 0; i < maze->rows; i++) {
         for (int j = 0; j < maze->cols; j++) {
-            printf("%c", maze->data[i][j]);
-        }
+            
+            // Prints X to show the players position, as long as it is not in the same
+            // square as the S (start) square.
+            if ((i == player->yPosition && j == player->xPosition)) {
+                printf("X");
+            }
 
+            else {
+                printf("%c", maze->data[i][j]);
+            }
+        }
         printf("\n");
     }
-
-    printf("\n");
 }
 
 
 int checkGameOver(Array2D *maze, int newXPosition, int newYPosition) {
     /*
-        Checks if the (newXpositiona, newYPosition) is the exit square.
-        Returns 2 if it is, 0 otherwise.
+        Checks if the (newXposition, newYPosition) is the exit square.
+        Returns 4 if it is, 0 otherwise.
         If it is the exit square, the game is over.
             - "Congratulations! You have completed the maze!"
     */
@@ -289,30 +282,21 @@ int main(int argc, char *argv[]) {
 
         If there aren't any arguments, the program will raise an error message and exit.
             - "Error: Filename not given".
-        If there are arguments, the first argument is the filename.
+        If there are arguments, the second argument is the filename.
+        
+        Calls the readFile() function to check if the file is valid.
+        Validates MazeSize and MazeContents
 
         Initialises the player struct.
-        Initialises the maze - stored as a two dimensional array of characters.
-
-        Calls the readFile() function to read the file into the maze array.#
-
-        Calls the validateMaze() function to validate the maze.
-        If 0 is returned, then the program stops.
-        If 1 is returned, then the maze is valid.
+        Initialises the maze - stored in a struct as a 2d array.
 
         Calls the drawMaze() function to print the maze to the screen.
 
         *
         Prompts the user to input a move.
         Calls the checkInput() function to check if the input is valid.
-        If 0 is returned, then the user is prompted to enter another input.
-        If 1 is returned, the input is valid.
-
-        If input is M or m, then the drawMaze() function is called.
-        Else, calls the checkValidMove() function to check if the move is valid.
-        If 0 is returned, then the user is prompted to enter another input.
-        If 1 is returned, the move is valid.
-        If 2 is returned, the game is over.
+        Calls the checkValidMove() function to check if it is a valid move, and 
+        if so, it carries out the desired output.
         
         Repeat from * until the game is over.
     */
@@ -323,17 +307,17 @@ int main(int argc, char *argv[]) {
     }
 
     if (readFile(argv[1]) == 2) {
-        return 2;
+        return 2; //File error: Filename not valid
     }
 
     int mazeSize = validateMazeSize(argv[1]);
     if (mazeSize == 3) {
-        return 3;
+        return 3; //Invalid Maze
     }
     
+    //Creates player and maze struct
     Player player;
     Player *playerPtr = &player;
-
     Array2D maze;
     Array2D *mazePtr = &maze;
     maze.rows = mazeSize / 1000;
@@ -345,10 +329,10 @@ int main(int argc, char *argv[]) {
     }
     
     if (validateMazeContents(argv[1], mazePtr, playerPtr) == 3) {
-        return 3;
+        return 3; //Invalid Maze
     }
 
-    drawMaze(mazePtr);
+    drawMaze(mazePtr, playerPtr);
 
     char input[1000]; 
     while (input[0] != 'q') {
@@ -358,11 +342,12 @@ int main(int argc, char *argv[]) {
 
         if (checkInput(input) == 0) {
             if (checkValidMove(input[0], mazePtr, playerPtr) == 4) {
-                return 0;
+                return 0; //Player completed the maze.
             }
         }
     }
     
+    // User inputted Q to exit the program.
     printf("Shutting down program\n");
     return 0;
 }

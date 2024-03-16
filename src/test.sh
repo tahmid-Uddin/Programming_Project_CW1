@@ -34,8 +34,8 @@ else
     echo -e "\e[31m   FAIL\e[0m"
 fi
 
-: <<'END_COMMENT' 
-echo -e "\n--Testing Invalid Maze Types--"
+
+echo -e "\n\n\n--Testing Invalid Maze Types--"
 
 # Loops through all the test mazes in the invalid maze folder
 # and checks them against the criteria of a valid maze
@@ -107,7 +107,7 @@ done < "$filename"
 
 
 
-echo -e "--Testing Valid Maze Types--"
+echo -e "\n\n--Testing Valid Maze Types--"
 
 # Loops through all the test mazes in the valid maze folder
 # and checks them against the criteria of a valid maze
@@ -175,10 +175,9 @@ do
 
 done < "$filename"
 
-END_COMMENT
 
 
-echo -e "--Testing User Inputs--"
+echo -e "\n\n--Testing User Inputs--"
 
 # Loops through the contents of a file containing a list of 
 # invalid inputs, and checks if they are in the list of 
@@ -189,7 +188,7 @@ while IFS= read -r line
 do
     ((all_counter++))
     echo -n "Test $all_counter - Invalid User inputs ($line)"
-    echo -n "$line" | echo -n "q" | ./misc/main test_inputs/student_mazes/valid/reg_5x5.txt > misc/tmp
+    printf "$line\nq" | ./misc/main test_inputs/student_mazes/valid/reg_5x5.txt > misc/tmp
     if grep -q "Error: Invalid user input" misc/tmp
     then
         echo -e "\e[32m   PASS\e[0m"
@@ -198,7 +197,7 @@ do
         echo -e "\e[31m   FAIL\e[0m"
     fi
 done < "$filename"
-echo ""
+
 
 
 # Loops through the contents of a file containing a list of 
@@ -210,7 +209,7 @@ while IFS= read -r line
 do
     ((all_counter++))
     echo -n "Test $all_counter - Valid User inputs ($line)" 
-    echo "$line" | ./misc/main test_inputs/student_mazes/valid/reg_5x5.txt > misc/tmp
+    printf "$line\nq" | ./misc/main test_inputs/student_mazes/valid/reg_5x5.txt > misc/tmp
     if grep -q "Error: Invalid user input" misc/tmp
     then
         echo -e "\e[31m   FAIL\e[0m"
@@ -228,8 +227,8 @@ echo ""
 # Expected: displayed maze state is equal to the expected maze state
 ((all_counter++))
 echo -n "Test $all_counter - Correctly Moves to the Right" 
-echo "D" | echo "M" | ./misc/main test_inputs/student_mazes/valid/empty_5x5.txt > misc/tmp
-if grep -q "#####\n#   #\n#  S#\n#   #\n####E" misc/tmp
+printf "D\nM\nq" | ./misc/main test_inputs/student_mazes/valid/empty_5x5.txt > misc/tmp
+if grep -q "# SX#" misc/tmp
 then
     echo -e "\e[32m   PASS\e[0m"
     ((pass_counter++))
@@ -244,8 +243,8 @@ fi
 # Expected: displayed maze state is equal to the expected maze state
 ((all_counter++))
 echo -n "Test $all_counter - Correctly Moves to the Left" 
-echo "A" | echo "M" | ./misc/main test_inputs/student_mazes/valid/empty_5x5.txt > misc/tmp
-if grep -q "#####\n#   #\n#S  #\n#   #\n####E" misc/tmp
+printf "A\nM\nq" | ./misc/main test_inputs/student_mazes/valid/empty_5x5.txt > misc/tmp
+if grep -q "#XS #" misc/tmp
 then
     echo -e "\e[32m   PASS\e[0m"
     ((pass_counter++))
@@ -260,8 +259,8 @@ fi
 # Expected: displayed maze state is equal to the expected maze state
 ((all_counter++))
 echo -n "Test $all_counter - Correctly Moves Up" 
-echo "W" | echo "M" | ./misc/main test_inputs/student_mazes/valid/empty_5x5.txt > misc/tmp
-if grep -q "#####\n# S #\n#   #\n#   #\n####E" misc/tmp
+printf "W\nM\nq" | ./misc/main test_inputs/student_mazes/valid/empty_5x5.txt > misc/tmp
+if grep -q "  X #" misc/tmp
 then
     echo -e "\e[32m   PASS\e[0m"
     ((pass_counter++))
@@ -276,15 +275,14 @@ fi
 # Expected: displayed maze state is equal to the expected maze state
 ((all_counter++))
 echo -n "Test $all_counter - Correctly Moves Down" 
-echo "S" | echo "M" | ./misc/main test_inputs/student_mazes/valid/empty_5x5.txt > misc/tmp
-if grep -q "#####\n#   #\n#   #\n# S #\n####E" misc/tmp
+printf "S\nM\nq" | ./misc/main test_inputs/student_mazes/valid/empty_5x5.txt > misc/tmp
+if grep -q "# X  " misc/tmp
 then
     echo -e "\e[32m   PASS\e[0m"
     ((pass_counter++))
 else
     echo -e "\e[31m   FAIL\e[0m"
 fi
-
 
 
 
@@ -388,15 +386,19 @@ do
     ((all_counter++))
     eval "$line"
     printf "Test $all_counter - Walking around a random maze"
-    if grep -q "Error: Invalid user input" misc/tmp
+    if grep -q "Shutting down program" misc/tmp
     then
         echo -e "\e[32m   PASS\e[0m"
         ((pass_counter++))
+
+    elif grep -q "Congratulations! You have completed the maze!" misc/tmp
+    then
+        echo -e "\e[32m   PASS\e[0m"
+        ((pass_counter++))
+
     else
         echo -e "\e[31m   FAIL\e[0m"
     fi
-
-
 done < "$filename"
 
 
@@ -426,9 +428,8 @@ do
 
 done < "$filename"
 
-
+fail_counter=$((all_counter - pass_counter))
 echo -e "\n\n--Test Results--"
 echo "Total Tests: $all_counter"
 echo "Tests Passed: $pass_counter"
-
-END_COMMENT
+echo "Tests Failed: $fail_counter"
