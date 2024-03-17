@@ -43,16 +43,16 @@ int validateMazeSize(char *filename) {
     // Counts the number of rows and columns in the file and makes sure that all rows
     // have the same number of columns.
     fgets(line, buffer, fptr);
-    int cols = strlen(line);
+    int cols = strcspn(line, "\n");
     int rows = 1;
     int currentColLength;
 
     while (fgets(line, buffer, fptr)) 
     {
-        currentColLength = strlen(line);
+        currentColLength = strcspn(line, "\n");
         if (currentColLength == cols) {
             rows++;
-        }   
+        } 
 
         else {
             printf("Error: All rows and columns are not the same size\n");
@@ -62,7 +62,7 @@ int validateMazeSize(char *filename) {
     }
 
     // Checks that the rows and columns are in the valid range.
-    if (!(rows >= MIN_HEIGHT && rows <= MAX_HEIGHT && cols - 1 >= MIN_HEIGHT && cols - 1 <= MAX_HEIGHT)) {
+    if (!(rows >= MIN_HEIGHT && rows <= MAX_HEIGHT && cols >= MIN_HEIGHT && cols <= MAX_HEIGHT)) {
         printf("Error: Invalid Maze size\n");
         fclose(fptr);
         return 3;
@@ -70,7 +70,7 @@ int validateMazeSize(char *filename) {
 
     fclose(fptr);
     // Makes the rows and columns a single value, to be later decoded using division and modulo operator
-    return (rows * 1000) + cols - 1; 
+    return (rows * 1000) + cols; 
 }
 
 
