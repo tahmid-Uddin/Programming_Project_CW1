@@ -31,11 +31,6 @@ int main(int argc, char *argv[]) {
     }
 
 
-    // Creates the maze file.
-    FILE *fptr;
-    fptr = fopen(filename, "w");
-
-
     // Initializes the maze array.
     Array2D maze;
     Array2D *mazePtr = &maze;
@@ -55,47 +50,59 @@ int main(int argc, char *argv[]) {
 
 
     // Creates the Start and Exit of the maze based on certain criteria.
+    // 1. The start can only be a distance of 10% of the total width and height
+    //    of the maze away from the edge.
+    // 2. The exit has to be atleast 40% of the total width and height of the maze
+    //    away from the start.
+
     srand(time(NULL));
     int startPositionX; int startPositionY; 
     int exitPositionX; int exitPositionY;
     int exitMinDistance;
+    int valid = 0; int attempts;
 
-    if ((rand() % 2) == 1) {
-        startPositionX = rand() % (int)(cols * 0.1 + 1);
-        if ((rand() % 2) == 1) {
-            startPositionX = maze.cols - startPositionX - 1;
+    while (valid == 0) { 
+        attempts = 0;
+
+        // Creates a random starting position.
+        if ((rand() % 2) == 1) { // 50% of the start being at the left or top edge.
+            startPositionY = rand() % rows; 
+            startPositionX = rand() % (int)(cols * 0.1 + 1); // Left edge.
+
+            if ((rand() % 2) == 1) { // 50% chance of the start being at the left or right edge
+                startPositionX = maze.cols - startPositionX - 1; // Right Edge
+         }}
+
+        else {
+            startPositionX = rand() % cols; 
+            startPositionY = rand() % (int)(rows * 0.1 + 1); // Top edge.
+
+            if ((rand() % 2) == 1) { // 50% chance of the start being at the top or bottom edge
+                startPositionY = maze.rows - startPositionY - 1; // Bottom Edge
+        }}
+
+
+        while (valid == 0 && attempts < 10) {
+            exitPositionX = rand() % cols;
+            exitPositionY = rand() % rows;
+
+            if (abs(exitPositionY - startPositionY) > (rows * 0.4)){
+                if (abs(exitPositionX - startPositionX) > (cols * 0.4)) {
+                    valid = 1;
+            }}
+
+            attempts++;       
         }
-        startPositionY = rand() % rows;
     }
-
-    else {
-        startPositionX = rand() % cols;
-        startPositionY = rand() % (int)(rows * 0.1 + 1);
-        if ((rand() % 2) == 1) {
-            startPositionY = maze.rows - startPositionY - 1;
-        }
-    }
-
-
-    exitPositionX = rand() % cols;
-    exitPositionY = rand() % rows;
-    while ((abs(exitPositionY - startPositionY) < (cols * 0.7)) && 
-           (abs(exitPositionX - startPositionX) < (rows * 0.7))) {
-        exitPositionX = rand() % cols;
-        exitPositionY = rand() % rows;
-
-        printf("Exit Position: (%d, %d)\n", exitPositionX, exitPositionY);
-    }
-
-
-    printf("\nStart Position: (%d, %d)\n", startPositionX, startPositionY);
-    printf("Exit Position: (%d, %d)\n", exitPositionX, exitPositionY);
 
     maze.data[startPositionY][startPositionX] = 'S';
     maze.data[exitPositionY][exitPositionX] = 'E';
 
-    
     DrawMaze(mazePtr);
-    
+
+    // Creates the maze file.
+    FILE *fptr;
+    fptr = fopen(filename, "w");
+
     return 0;
 }
