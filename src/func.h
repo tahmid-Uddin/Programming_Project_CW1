@@ -10,7 +10,6 @@ struct player {
     int xPosition;
     int yPosition; 
 };
-
 typedef struct player Player;
 
 struct array2D {
@@ -22,8 +21,20 @@ struct array2D {
     int startXPosition;
     int startYPosition;
 };
-
 typedef struct array2D Array2D;
+
+struct node {
+    char data;
+    int visited;
+};
+typedef struct node Node;
+
+struct mazeStruct {
+    Node** data;
+    int rows;
+    int cols;
+};
+typedef struct mazeStruct Maze;
 
 int readFile(char *filename);
 int validateMazeSize(char *filename);
@@ -34,5 +45,8 @@ int checkValidMove(char input, Array2D *maze, Player *player);
 void movePlayer(char input, Player *player, char *maze, int newXPosition, int newYPosition);
 int checkGameOver(Array2D *maze, int newXPosition, int newYPosition);
 
+void DrawMaze(Maze *maze);
+double DistanceToExit(int x, int y, int exitX, int exitY);
+void EmptyMaze(Maze *maze, int startX, int startY, int exitX, int exitY);
 
 #endif
