@@ -48,5 +48,8 @@ int checkGameOver(Array2D *maze, int newXPosition, int newYPosition);
 void DrawMaze(Maze *maze);
 double DistanceToExit(int x, int y, int exitX, int exitY);
 void EmptyMaze(Maze *maze, int startX, int startY, int exitX, int exitY);
-
+int checkValidCoordinates(int x, int y, int j, int array[], int largestSide, int startX, int startY, int exitX, int exitY);
+void PathFinder(Maze *maze, int currentPositionX, int currentPositionY, int exitPositionX, int exitPositionY);
+void ResetVisited(Maze *maze);
+void PopulateMaze(Maze *maze, int density);
 #endif

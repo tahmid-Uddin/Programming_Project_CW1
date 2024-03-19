@@ -23,10 +23,10 @@ double DistanceToExit(int x, int y, int exitX, int exitY) {
     
     if (x == exitX) {
         if (y == exitY) {
-            return 1;
+            return 0;
         }
     }
-    return (1 / (sqrt(pow(abs(x - exitX), 2) + pow(abs(y - exitY), 2))));
+    return sqrt(pow(abs(x - exitX), 2) + pow(abs(y - exitY),2));
 }
 
 void EmptyMaze(Maze *maze, int startX, int startY, int exitX, int exitY) {
@@ -41,6 +41,98 @@ void EmptyMaze(Maze *maze, int startX, int startY, int exitX, int exitY) {
     maze->data[exitY][exitX].data = 'E';
 }
 
+void PathFinder(Maze *maze, int currentPositionX, int currentPositionY, int exitPositionX, int exitPositionY) {
+    int min_index = 0; int min; double distancesArray[4];
+    int finished = 0;
+    ResetVisited(maze);
+    while (finished == 0)  {
+        DrawMaze(maze);
+        usleep(100000);
+        distancesArray[0] = 1000; distancesArray[1] = 1000; distancesArray[2] = 1000; distancesArray[3] = 1000;
+
+        if (currentPositionX != 0 && maze->data[currentPositionY][currentPositionX - 1].data != '#' && maze->data[currentPositionY][currentPositionX - 1].visited != 1) {
+            distancesArray[0] = DistanceToExit(currentPositionX - 1, currentPositionY, exitPositionX, exitPositionY);} //left
+
+        if (currentPositionX != maze->cols-1&& maze->data[currentPositionY][currentPositionX + 1].data != '#' && maze->data[currentPositionY][currentPositionX + 1].visited != 1) {
+            distancesArray[1] = DistanceToExit(currentPositionX + 1, currentPositionY, exitPositionX, exitPositionY);} //right
+
+        if (currentPositionY != 0&& maze->data[currentPositionY - 1][currentPositionX].data != '#' && maze->data[currentPositionY - 1][currentPositionX].visited != 1) {
+            distancesArray[2] = DistanceToExit(currentPositionX, currentPositionY - 1, exitPositionX, exitPositionY);} //up
+
+        if (currentPositionY != maze->rows-1&& maze->data[currentPositionY + 1][currentPositionX].data != '#' && maze->data[currentPositionY + 1][currentPositionX].visited != 1) {
+            distancesArray[3] = DistanceToExit(currentPositionX, currentPositionY + 1, exitPositionX, exitPositionY);} //down
+        
+        min = distancesArray[0];
+        min_index = 0;
+        for (int j = 1; j < 4; j++) {
+            //printf("%f, ", distancesArray[j]);
+            if (min > distancesArray[j]) {
+                min = distancesArray[j];
+                min_index = j;
+            }
+        }
+    
+        if (min_index == 0 && currentPositionX != 0) {currentPositionX--;}
+        else if (min_index == 1 && currentPositionX != maze->cols - 1) {currentPositionX++;}
+        else if (min_index == 2 && currentPositionY != 0) {currentPositionY--;}
+        else if (min_index == 3 && currentPositionY != maze->rows - 1) {currentPositionY++;}
+
+        if (maze->data[currentPositionY][currentPositionX].data != 'S') {
+            if (maze->data[currentPositionY][currentPositionX].data != 'E') {
+                if (maze->data[currentPositionY][currentPositionX].data != 'e') {
+                    maze->data[currentPositionY][currentPositionX].data = '.';
+                    maze->data[currentPositionY][currentPositionX].visited = 1;
+                }
+            }
+        }
+
+        if (currentPositionX == exitPositionX) {
+            if (currentPositionY == exitPositionY) {
+                finished = 1;
+            }
+        }
+    }
+}
+
+int checkValidCoordinates(int x, int y, int j, int array[], int largestSide, int startX, int startY, int exitX, int exitY) {
+    for (int i = 0; i < j; i = i + 2) {
+        if (x == array[i] && y == array[i + 1]) {
+            return 1;
+        }
+
+        if ((DistanceToExit(x, y, array[i], array[i + 1]) < largestSide * 0.2) ||
+            (DistanceToExit(x, y, startX, startY) < largestSide * 0.2) || 
+            (DistanceToExit(x, y, exitX, exitY) < largestSide * 0.2)) {
+                return 1;
+        }
+
+
+    }
+    return 0;
+}
+
+void PopulateMaze(Maze *maze, int density) {
+    for (int i = 0; i < maze->rows; i++) {
+        for (int j = 0; j < maze->cols; j++) {
+            if (maze->data[i][j].data != '.' && maze->data[i][j].data != 'S' && maze->data[i][j].data != 'E') {
+                if (rand() % 100 < density) {
+                    maze->data[i][j].data = '#';
+                }
+            }
+            if (maze->data[i][j].data == '.' || maze->data[i][j].data == 'e') {
+                maze->data[i][j].data = ' ';
+            }    
+        }
+    }
+}
+
+void ResetVisited(Maze *maze) {
+    for (int i = 0; i < maze->rows; i++) {
+        for (int j = 0; j < maze->cols; j++) {
+            maze->data[i][j].visited = 0;
+        }
+    }
+}
 
 int main(int argc, char *argv[]) {
     char *filename = argv[1];
@@ -112,158 +204,63 @@ int main(int argc, char *argv[]) {
             attempts++;       
         }
     }
-    
-    startPositionX = 2;
-    startPositionY = 2;
-    exitPositionX = cols - 2;
-    exitPositionY = rows - 2;
-    EmptyMaze(mazePtr, startPositionX, startPositionY, exitPositionX, exitPositionY);
 
-
-    // Random walk algorithmn.
-    int currentPositionX; int currentPositionY;
-    double left; double right; double up; double down; double sum;
-    int adjacentNode1; int adjacentNode2;
-    int* probabilitySpace; int direction;
-    int stepsAverage = 0; int steps = 1000;
+    // Generate dummy exit points and creates paths to them
+    int mazesGenerated = 1;
+    int noDummyExits;
+    int largestSide;
 
     double time = clock();
-    for (int i = 0; i < 1; i++) {
-        steps = 0;
-        currentPositionX = startPositionX;
-        currentPositionY = startPositionY;
+    for (int i = 0; i < mazesGenerated; i++) {
+        EmptyMaze(mazePtr, startPositionX, startPositionY, exitPositionX, exitPositionY);
+        PopulateMaze(mazePtr, 5);
+        if (rows > cols) { largestSide = rows; }
+        else { largestSide = cols; }
+        noDummyExits = (int)ceil(largestSide * 0.3);
 
-        while (maze.data[currentPositionY][currentPositionX].data != 'E') {
-            steps++;
-            usleep(100000);
-            DrawMaze(mazePtr);
-            left = 0; right = 0; up = 0; down = 0;
-
-            // Finds the distance between valid adjacent nodes and the exit.
-            if (currentPositionX != 0 && maze.data[currentPositionY][currentPositionX - 1].visited == 0) {
-                adjacentNode1 = 0; adjacentNode2 = 0;
-                if (currentPositionY > 0) {
-                    adjacentNode1 = maze.data[currentPositionY - 1][currentPositionX - 1].visited;
-                }
-                if (currentPositionY < rows - 1) {
-                    adjacentNode2 = maze.data[currentPositionY + 1][currentPositionX - 1].visited;
-                }
-
-                if (adjacentNode1 == 0 || adjacentNode2 == 0) {
-                    left = DistanceToExit(currentPositionX - 1, currentPositionY, exitPositionX, exitPositionY); 
-                }
-            }
-
-            if (currentPositionX != cols - 1 && maze.data[currentPositionY][currentPositionX + 1].visited == 0) {
-                adjacentNode1 = 0; adjacentNode2 = 0;
-                if (currentPositionY > 0) {
-                    adjacentNode1 = maze.data[currentPositionY - 1][currentPositionX + 1].visited;
-                }
-                if (currentPositionY < rows - 1) {
-                    adjacentNode2 = maze.data[currentPositionY + 1][currentPositionX + 1].visited;
-                }
-
-                if (adjacentNode1 == 0 || adjacentNode2 == 0) {
-                    right = DistanceToExit(currentPositionX + 1, currentPositionY, exitPositionX, exitPositionY);
-                }
-            }
-                
-            if (currentPositionY != 0 && maze.data[currentPositionY - 1][currentPositionX].visited == 0) { 
-                adjacentNode1 = 0; adjacentNode2 = 0;
-                if (currentPositionX > 0) {
-                    adjacentNode1 = maze.data[currentPositionY - 1][currentPositionX - 1].visited;
-                }
-                if (currentPositionX < cols - 1) {
-                    adjacentNode2 = maze.data[currentPositionY - 1][currentPositionX + 1].visited;
-                }
-
-                if (adjacentNode1 == 0 || adjacentNode2 == 0) {
-                   up = DistanceToExit(currentPositionX, currentPositionY - 1, exitPositionX, exitPositionY);
-                }
-            }
-
-            if (currentPositionY != rows - 1 && maze.data[currentPositionY + 1][currentPositionX].visited == 0) {
-                adjacentNode1 = 0; adjacentNode2 = 0;
-                if (currentPositionX > 0) {
-                    adjacentNode1 = maze.data[currentPositionY + 1][currentPositionX - 1].visited;
-                }
-                if (currentPositionX < cols - 1) {
-                    adjacentNode2 = maze.data[currentPositionY + 1][currentPositionX + 1].visited;
-                }
-
-                if (adjacentNode1 == 0 || adjacentNode2 == 0) {
-                   down = DistanceToExit(currentPositionX, currentPositionY + 1, exitPositionX, exitPositionY);
-                }
-            }
-
-            
-            
-            // Creates the probability distribution for each direction.
-            sum = left + right + up + down;
-            if (sum != 0) {            
-                left = round((left / sum) * 1000);
-                right = round((right / sum) * 1000);
-                up = round((up / sum) * 1000);
-                down = round((down / sum) * 1000);
-                sum = left + right + up + down;
-
-                printf("Current Position: (%d, %d)\n", currentPositionX, currentPositionY);
-                printf("Left: %.1f, Right: %.1f, Up: %.1f, Down: %.1f, Sum: %.1f\n", left/10, right/10, up/10, down/10, sum/10);
-
-                // Creates a probability space of the distribution, which can be used to pick a direction.
-    
-                probabilitySpace = malloc(sum * sizeof(int));
-                for (int i = 0; i < left; i++) {probabilitySpace[i] = 0;}
-                for (int i = left - 1; i < left + right; i++) {probabilitySpace[i] = 1;}
-                for (int i = left + right - 1; i < left + right + up; i++) {probabilitySpace[i] = 2;}
-                for (int i = left + right + up - 1; i < sum; i++) {probabilitySpace[i] = 3;}
-
-                direction = probabilitySpace[rand() % (int)sum];
-            }
-
-            else {
-                direction = rand() % 4;
-            }
+        int dummyExitCoordinates[(noDummyExits * 2)];
+        int x; int y;
         
-            
-            if (direction == 0 && currentPositionX != 0) {currentPositionX--;}
-            else if (direction == 1 && currentPositionX != cols - 1) {currentPositionX++;}
-            else if (direction == 2 && currentPositionY != 0) {currentPositionY--;}
-            else if (direction == 3 && currentPositionY != rows - 1) {currentPositionY++;}
+        for (int j = 0; j < noDummyExits; j++) {
+            x = rand() % (cols - 1);
+            y = rand() % (rows - 1);
 
-            if (maze.data[currentPositionY][currentPositionX].data != 'S') {
-                if (maze.data[currentPositionY][currentPositionX].data != 'E') {
-                    maze.data[currentPositionY][currentPositionX].data = '.';
-                    maze.data[currentPositionY][currentPositionX].visited = 1;
+            attempts = 0;
+            while (((x == startPositionX && y == startPositionY) || (x == exitPositionX && y == exitPositionY) || (maze.data[y][x].data == '.') || (maze.data[y][x].data == '#') ||
+                (checkValidCoordinates(x, y, j*2, dummyExitCoordinates, largestSide,startPositionX, startPositionY, exitPositionX, exitPositionY) == 1)) && (attempts < 10)) {
+                    x = rand() % (cols - 1);
+                    y = rand() % (rows - 1);
+                    attempts++;
                 }
+
+            if (attempts < 10) {
+                dummyExitCoordinates[(j * 2)] = x;
+                dummyExitCoordinates[(j * 2) + 1] = y;
+
+                maze.data[y][x].data = 'e';
             }
         }
-        
-        stepsAverage = stepsAverage + steps;
+
+        //Path to real exit node.
+        for (int j = 0; j < noDummyExits; j++) {
+            PathFinder(mazePtr, startPositionX, startPositionY, dummyExitCoordinates[j], dummyExitCoordinates[j + 1]);
+        }
+
+        PathFinder(mazePtr, startPositionX, startPositionY, exitPositionX, exitPositionY);
+
+        // Populate maze with #
+        printf("Paths:\n");
+        DrawMaze(mazePtr);
+        PopulateMaze(mazePtr, 50);
+        printf("Finished Maze:\n");
+        DrawMaze(mazePtr);
     }
-    
+
     time = clock() - time;
     double time_taken = ((double)time)/CLOCKS_PER_SEC;  
-    
 
-    // Populate maze
-    for (int i = 0; i < maze.rows; i++) {
-        for (int j = 0; j < maze.cols; j++) {
-            if (maze.data[i][j].data!= '.' && maze.data[i][j].data!= 'S' && maze.data[i][j].data != 'E') {
-                if (rand() % 10 > 4) {
-                    maze.data[i][j].data = '#';
-                }
-            }
-            if (maze.data[i][j].data == '.') {
-                maze.data[i][j].data = ' ';
-            }    
-        }
-    }
-
-    DrawMaze(mazePtr);
-    printf("\nAverage number of steps from 1000 random walks: %d\n", stepsAverage);
-    printf("Time taken: %f seconds\n", time_taken);
-    printf("Time taken per maze: %f seconds\n", time_taken / 1000);
+    printf("Time taken to generate %d mazes: %f seconds\n", mazesGenerated, time_taken);
+    printf("Time taken per maze: %f seconds\n", time_taken / mazesGenerated);
 
     // Creates the maze file.
     FILE *fptr;
