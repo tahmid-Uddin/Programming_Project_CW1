@@ -303,7 +303,7 @@ int main(int argc, char *argv[]) {
 
     if (argv[1] == NULL) {
         printf("Error: Filename not given\n");
-        return 2;
+        return 1;
     }
 
     if (readFile(argv[1]) == 2) {
