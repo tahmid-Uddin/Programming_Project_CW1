@@ -342,6 +342,11 @@ int main(int argc, char *argv[]) {
 
         if (checkInput(input) == 0) {
             if (checkValidMove(input[0], mazePtr, playerPtr) == 4) {
+                for (int i = 0; i < maze.rows; i++) {
+                    free(maze.data[i]);
+                }
+
+                free(maze.data)
                 return 0; //Player completed the maze.
             }
         }
@@ -349,5 +354,13 @@ int main(int argc, char *argv[]) {
     
     // User inputted Q to exit the program.
     printf("Shutting down program\n");
+    
+
+    for (int i = 0; i < maze.rows; i++) {
+        free(maze.data[i]);
+    }
+
+    free(maze.data)
+    
     return 0;
 }
