@@ -197,6 +197,7 @@ int main(int argc, char *argv[]) {
             }
 
             
+            
             // Creates the probability distribution for each direction.
             sum = left + right + up + down;
             if (sum != 0) {            
