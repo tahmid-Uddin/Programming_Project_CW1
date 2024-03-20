@@ -10,6 +10,7 @@
 
 
 void DrawMaze(Maze *maze) {
+    printf("===========\n");
     for (int i = 0; i < maze->rows; i++) {
         for (int j = 0; j < maze->cols; j++) {
             printf("%c", maze->data[i][j].data);
@@ -17,6 +18,42 @@ void DrawMaze(Maze *maze) {
         printf("\n");
     }
     printf("\n");
+}
+
+void PopulateMaze(Maze *maze, int density) {
+    for (int i = 0; i < maze->rows; i++) {
+        for (int j = 0; j < maze->cols; j++) {
+            if (maze->data[i][j].data != '.' && maze->data[i][j].data != 'S' && maze->data[i][j].data != 'E') {
+                if (rand() % 100 < density) {
+                    maze->data[i][j].data = '#';
+                }
+            }
+            if (maze->data[i][j].data == '.' || maze->data[i][j].data == 'e') {
+                maze->data[i][j].data = ' ';
+            }    
+        }
+    }
+}
+
+void EmptyMaze(Maze *maze, int startX, int startY, int exitX, int exitY) {
+    maze->visitedNodes = 0;
+    for (int i = 0; i < maze->rows; i++) {
+        for (int j = 0; j < maze->cols; j++) {
+            maze->data[i][j].data = ' ';
+            maze->data[i][j].visited = 0;
+        }
+    }
+
+    maze->data[startY][startX].data = 'S';
+    maze->data[exitY][exitX].data = 'E';
+}
+
+void ResetVisited(Maze *maze) {
+    for (int i = 0; i < maze->rows; i++) {
+        for (int j = 0; j < maze->cols; j++) {
+            maze->data[i][j].visited = 0;
+        }
+    }
 }
 
 double DistanceToExit(int x, int y, int exitX, int exitY) {
@@ -29,37 +66,45 @@ double DistanceToExit(int x, int y, int exitX, int exitY) {
     return sqrt(pow(abs(x - exitX), 2) + pow(abs(y - exitY),2));
 }
 
-void EmptyMaze(Maze *maze, int startX, int startY, int exitX, int exitY) {
+int SelectRandomStart(Maze *maze) {
+    int visitedNodesX[maze->visitedNodes];
+    int visitedNodesY[maze->visitedNodes];
+    int counter = 0;
     for (int i = 0; i < maze->rows; i++) {
         for (int j = 0; j < maze->cols; j++) {
-            maze->data[i][j].data = ' ';
-            maze->data[i][j].visited = 0;
+            if (maze->data[i][j].visited == 1) {
+                visitedNodesX[counter] = j;
+                visitedNodesY[counter] = i;
+                counter ++;
+            }
         }
     }
-
-    maze->data[startY][startX].data = 'S';
-    maze->data[exitY][exitX].data = 'E';
+    int x = visitedNodesX[rand() % (counter)];
+    int y = visitedNodesY[rand() % (counter)];
+    return (x * 1000) + y;
 }
 
 void PathFinder(Maze *maze, int currentPositionX, int currentPositionY, int exitPositionX, int exitPositionY) {
     int min_index = 0; int min; double distancesArray[4];
     int finished = 0;
-    ResetVisited(maze);
+
     while (finished == 0)  {
         DrawMaze(maze);
-        usleep(100000);
-        distancesArray[0] = 1000; distancesArray[1] = 1000; distancesArray[2] = 1000; distancesArray[3] = 1000;
+        usleep(50000);
+        distancesArray[0] = 10000; distancesArray[1] = 10000; distancesArray[2] = 10000; distancesArray[3] = 10000;
 
-        if (currentPositionX != 0 && maze->data[currentPositionY][currentPositionX - 1].data != '#' && maze->data[currentPositionY][currentPositionX - 1].visited != 1) {
+        //&& maze->data[currentPositionY + 1][currentPositionX].data != '#' && maze->data[currentPositionY + 1][currentPositionX].visited != 1
+
+        if (currentPositionX != 0) {
             distancesArray[0] = DistanceToExit(currentPositionX - 1, currentPositionY, exitPositionX, exitPositionY);} //left
 
-        if (currentPositionX != maze->cols-1&& maze->data[currentPositionY][currentPositionX + 1].data != '#' && maze->data[currentPositionY][currentPositionX + 1].visited != 1) {
+        if (currentPositionX != maze->cols-1) {
             distancesArray[1] = DistanceToExit(currentPositionX + 1, currentPositionY, exitPositionX, exitPositionY);} //right
 
-        if (currentPositionY != 0&& maze->data[currentPositionY - 1][currentPositionX].data != '#' && maze->data[currentPositionY - 1][currentPositionX].visited != 1) {
+        if (currentPositionY != 0) {
             distancesArray[2] = DistanceToExit(currentPositionX, currentPositionY - 1, exitPositionX, exitPositionY);} //up
 
-        if (currentPositionY != maze->rows-1&& maze->data[currentPositionY + 1][currentPositionX].data != '#' && maze->data[currentPositionY + 1][currentPositionX].visited != 1) {
+        if (currentPositionY != maze->rows-1) {
             distancesArray[3] = DistanceToExit(currentPositionX, currentPositionY + 1, exitPositionX, exitPositionY);} //down
         
         min = distancesArray[0];
@@ -80,8 +125,11 @@ void PathFinder(Maze *maze, int currentPositionX, int currentPositionY, int exit
         if (maze->data[currentPositionY][currentPositionX].data != 'S') {
             if (maze->data[currentPositionY][currentPositionX].data != 'E') {
                 if (maze->data[currentPositionY][currentPositionX].data != 'e') {
-                    maze->data[currentPositionY][currentPositionX].data = '.';
-                    maze->data[currentPositionY][currentPositionX].visited = 1;
+                    if (maze->data[currentPositionY][currentPositionX].data != 's') {
+                        maze->data[currentPositionY][currentPositionX].data = '.';
+                        maze->data[currentPositionY][currentPositionX].visited = 1;
+                        maze->visitedNodes++;
+                    }
                 }
             }
         }
@@ -111,28 +159,7 @@ int checkValidCoordinates(int x, int y, int j, int array[], int largestSide, int
     return 0;
 }
 
-void PopulateMaze(Maze *maze, int density) {
-    for (int i = 0; i < maze->rows; i++) {
-        for (int j = 0; j < maze->cols; j++) {
-            if (maze->data[i][j].data != '.' && maze->data[i][j].data != 'S' && maze->data[i][j].data != 'E') {
-                if (rand() % 100 < density) {
-                    maze->data[i][j].data = '#';
-                }
-            }
-            if (maze->data[i][j].data == '.' || maze->data[i][j].data == 'e') {
-                maze->data[i][j].data = ' ';
-            }    
-        }
-    }
-}
 
-void ResetVisited(Maze *maze) {
-    for (int i = 0; i < maze->rows; i++) {
-        for (int j = 0; j < maze->cols; j++) {
-            maze->data[i][j].visited = 0;
-        }
-    }
-}
 
 int main(int argc, char *argv[]) {
     char *filename = argv[1];
@@ -205,53 +232,81 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    EmptyMaze(mazePtr, startPositionX, startPositionY, exitPositionX, exitPositionY);
+
+    
+
     // Generate dummy exit points and creates paths to them
     int mazesGenerated = 1;
     int noDummyExits;
-    int largestSide;
-
+    int noDetourPoints;
+    int coords;
+    int x; int y; int largestSide; 
     double time = clock();
-    for (int i = 0; i < mazesGenerated; i++) {
-        EmptyMaze(mazePtr, startPositionX, startPositionY, exitPositionX, exitPositionY);
-        PopulateMaze(mazePtr, 5);
-        if (rows > cols) { largestSide = rows; }
-        else { largestSide = cols; }
-        noDummyExits = (int)ceil(largestSide * 0.3);
 
+    if (rows > cols) { largestSide = rows; }
+    else { largestSide = cols;}
+
+    
+    for (int i = 0; i < mazesGenerated; i++) {
+        noDummyExits = (int)ceil(largestSide * 0.3);
         int dummyExitCoordinates[(noDummyExits * 2)];
-        int x; int y;
-        
+
+        noDetourPoints = (int)(largestSide * 0.2);
+        int detourPointCoordinates[noDetourPoints * 2];
+        detourPointCoordinates[0] = startPositionX;
+        detourPointCoordinates[1] = startPositionY;
+
+        for (int j = 1; j < noDetourPoints; j++) {
+            x = rand() % (cols - 1);
+            y = rand() % (rows - 1);
+            attempts = 0;
+            while (((x == startPositionX && y == startPositionY) || (x == exitPositionX && y == exitPositionY) ||
+                   (checkValidCoordinates(x, y, j*2, detourPointCoordinates, largestSide, startPositionX, startPositionY, exitPositionX, exitPositionY) == 1)) && (attempts < 50)) {
+                x = rand() % (cols - 1);
+                y = rand() % (rows - 1);
+            }
+
+            if (attempts < 50) {
+                detourPointCoordinates[j * 2] = x;
+                detourPointCoordinates[(j * 2) + 1] = y;
+                maze.data[y][x].data = 's';
+                
+                PathFinder(mazePtr, detourPointCoordinates[(j * 2) - 2], detourPointCoordinates[(j * 2) - 1], detourPointCoordinates[(j * 2)], detourPointCoordinates[((j * 2) + 1)]);
+            }
+        }
+
+        PathFinder(mazePtr, detourPointCoordinates[(noDetourPoints * 2) - 2],  detourPointCoordinates[(noDetourPoints * 2)  - 1], exitPositionX, exitPositionY);
+
+/*
         for (int j = 0; j < noDummyExits; j++) {
             x = rand() % (cols - 1);
             y = rand() % (rows - 1);
 
             attempts = 0;
             while (((x == startPositionX && y == startPositionY) || (x == exitPositionX && y == exitPositionY) || (maze.data[y][x].data == '.') || (maze.data[y][x].data == '#') ||
-                (checkValidCoordinates(x, y, j*2, dummyExitCoordinates, largestSide,startPositionX, startPositionY, exitPositionX, exitPositionY) == 1)) && (attempts < 10)) {
+                (checkValidCoordinates(x, y, j*2, dummyExitCoordinates, largestSide,startPositionX, startPositionY, exitPositionX, exitPositionY) == 1)) && (attempts < 50)) {
                     x = rand() % (cols - 1);
                     y = rand() % (rows - 1);
                     attempts++;
                 }
 
-            if (attempts < 10) {
+            if (attempts < 50) {
                 dummyExitCoordinates[(j * 2)] = x;
                 dummyExitCoordinates[(j * 2) + 1] = y;
-
-                maze.data[y][x].data = 'e';
+                coords = SelectRandomStart(mazePtr);
+                PathFinder(mazePtr, coords / 1000, coords % 1000, x, y);
             }
         }
 
-        //Path to real exit node.
-        for (int j = 0; j < noDummyExits; j++) {
-            PathFinder(mazePtr, startPositionX, startPositionY, dummyExitCoordinates[j], dummyExitCoordinates[j + 1]);
-        }
+*/
 
-        PathFinder(mazePtr, startPositionX, startPositionY, exitPositionX, exitPositionY);
+        
 
         // Populate maze with #
         printf("Paths:\n");
         DrawMaze(mazePtr);
-        PopulateMaze(mazePtr, 50);
+        PopulateMaze(mazePtr, 60);
         printf("Finished Maze:\n");
         DrawMaze(mazePtr);
     }

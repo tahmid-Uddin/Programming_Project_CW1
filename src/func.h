@@ -33,6 +33,7 @@ struct mazeStruct {
     Node** data;
     int rows;
     int cols;
+    int visitedNodes;
 };
 typedef struct mazeStruct Maze;
 
