@@ -27,13 +27,14 @@ int validateMazeSize(char *filename) {
         Reads the numbers of rows and cols and validates its size.
         - Returns the size of the maze if its valid, other wise returns 3
 
-        Checks if the maze is within the bounds set by the constants.
+        Checks if the maze is within the bounds set by the constants in func.h.
             - "Error: Invalid Maze size"
         Checks if the maze has uniform row lengths.
             - "Error: All rows and columns are not the same size"
 
         If any of these checks fail, the relavent error message will be printed.
     */
+
     FILE *fptr;
     fptr = fopen(filename, "r");
 
@@ -44,7 +45,7 @@ int validateMazeSize(char *filename) {
     // have the same number of columns.
     fgets(line, buffer, fptr);
     int cols = strcspn(line, "\n");
-    int rows = 1;
+    int rows = 1; // Starts at 1, as first line already counted in the fgets above.
     int currentColLength;
 
     while (fgets(line, buffer, fptr)) 
@@ -69,7 +70,7 @@ int validateMazeSize(char *filename) {
     }
 
     fclose(fptr);
-    // Makes the rows and columns a single value, to be later decoded using division and modulo operator
+    // Codes the rows and columns to a single value, to be later decoded using integer division and modulo operator.
     return (rows * 1000) + cols; 
 }
 
@@ -92,8 +93,8 @@ int validateMazeContents(char *filename, Array2D *maze, Player *player) {
     fptr = fopen(filename, "r");
 
     int buffer = 1000;
-    int sCounter = 0;
-    int eCounter = 0;
+    int startCounter = 0;
+    int exitCounter = 0;
     char line[buffer];
 
     for (int i = 0; i < maze->rows; i++) {
@@ -106,13 +107,13 @@ int validateMazeContents(char *filename, Array2D *maze, Player *player) {
                 player->yPosition = i;
                 maze->startXPosition = j;
                 maze->startYPosition = i;
-                sCounter++;
+                startCounter++;
             }
 
             if (line[j] == 'E') {
                 maze->exitXPosition = j;
                 maze->exitYPosition = i;
-                eCounter++;
+                exitCounter++;
             }
 
             if (line[j] == ' ' || line[j] == '#' || line[j] == 'S' || line[j] == 'E') {
@@ -127,7 +128,7 @@ int validateMazeContents(char *filename, Array2D *maze, Player *player) {
         }
     }
 
-    if (!(eCounter == 1 && sCounter == 1))
+    if (!(exitCounter == 1 && startCounter == 1))
     {
         printf("Error: Has invalid number of Start and Exits");
         return 3;
@@ -246,8 +247,7 @@ void drawMaze(Array2D *maze, Player *player) {
     for (int i = 0; i < maze->rows; i++) {
         for (int j = 0; j < maze->cols; j++) {
             
-            // Prints X to show the players position, as long as it is not in the same
-            // square as the S (start) square.
+            // Prints X to show the players position - will override S if in the same position.
             if ((i == player->yPosition && j == player->xPosition)) {
                 printf("X");
             }
@@ -258,6 +258,7 @@ void drawMaze(Array2D *maze, Player *player) {
         }
         printf("\n");
     }
+    printf("\n");
 }
 
 
@@ -301,11 +302,13 @@ int main(int argc, char *argv[]) {
         Repeat from * until the game is over.
     */
 
+    // No command line args
     if (argv[1] == NULL) {
         printf("Error: Filename not given\n");
         return 1;
     }
 
+    // More than 1 command line args
     if (argv[2] != NULL) {
         printf("Error: Bad Args\n");
         return 1;
@@ -320,7 +323,7 @@ int main(int argc, char *argv[]) {
         return 3; //Invalid Maze
     }
     
-    //Creates player and maze struct
+    //Creates player and maze structs
     Player player;
     Player *playerPtr = &player;
     Array2D maze;
@@ -329,6 +332,7 @@ int main(int argc, char *argv[]) {
     maze.cols = mazeSize % 1000;
     maze.data = malloc(maze.rows*sizeof(char*));
 
+    // Allocates space for maze content.
     for (int i = 0; i < maze.rows; i++) {
         maze.data[i] = malloc(maze.cols*sizeof(char));
     }
@@ -337,34 +341,35 @@ int main(int argc, char *argv[]) {
         return 3; //Invalid Maze
     }
 
+    // Game loop
     drawMaze(mazePtr, playerPtr);
-
     char input[1000]; 
     while (input[0] != 'q') {
 
-        printf("\nEnter WASD to navigate the maze, or M to display the map, or Q to quit the game: ");
+        printf("Enter WASD to navigate the maze, or M to display the map, or q to quit the game: ");
         fgets(input, sizeof input, stdin);
 
         if (checkInput(input) == 0) {
             if (checkValidMove(input[0], mazePtr, playerPtr) == 4) {
+                // Deallocates memory
                 for (int i = 0; i < maze.rows; i++) {
                     free(maze.data[i]);
                 }
-
                 free(maze.data);
+                
                 return 0; //Player completed the maze.
             }
         }
+        printf("\n");
     }
     
     // User inputted Q to exit the program.
     printf("Shutting down program\n");
     
-
+    // Deallocates memory
     for (int i = 0; i < maze.rows; i++) {
         free(maze.data[i]);
     }
-
     free(maze.data);
     
     return 0;
