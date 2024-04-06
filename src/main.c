@@ -306,6 +306,11 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    if (argv[2] != NULL) {
+        printf("Error: Bad Args\n");
+        return 1;
+    }
+
     if (readFile(argv[1]) == 2) {
         return 2; //File error: Filename not valid
     }
