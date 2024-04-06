@@ -346,7 +346,7 @@ int main(int argc, char *argv[]) {
                     free(maze.data[i]);
                 }
 
-                free(maze.data)
+                free(maze.data);
                 return 0; //Player completed the maze.
             }
         }
@@ -360,7 +360,7 @@ int main(int argc, char *argv[]) {
         free(maze.data[i]);
     }
 
-    free(maze.data)
+    free(maze.data);
     
     return 0;
 }
