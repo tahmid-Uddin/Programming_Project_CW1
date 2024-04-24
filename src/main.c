@@ -144,7 +144,7 @@ int checkInput(char input[]) {
         Checks the user input to see if it is valid.
         - Returns 0 if the input is valid, 1 otherwise.
 
-        Valid inputs are W,A,S,D,M,w,a,s,d,m,q.
+        Valid inputs are W,A,S,D,M,w,a,s,d,m.
         All other characters are invalid.
 
         The relavent error message will be printed for invalid inputs.
@@ -156,10 +156,6 @@ int checkInput(char input[]) {
         input[0] == 'M' || input[0] == 'm') && (strlen(input) == 2)) {
             
         return 0;
-    }
-
-    else if (input[0] == 'q') {
-        return 1;
     }
 
     printf("Error: Invalid user input\n");
@@ -343,14 +339,16 @@ int main(int argc, char *argv[]) {
 
     // Game loop
     drawMaze(mazePtr, playerPtr);
-    char input[1000]; 
-    while (input[0] != 'q') {
+    char input[1000];
+    int gameOver = 0; 
+    while (gameOver != 4) {
 
-        printf("Enter WASD to navigate the maze, or M to display the map, or q to quit the game: ");
+        printf("Enter WASD/wasd to navigate the maze, or M/m to display the map: ");
         fgets(input, sizeof input, stdin);
 
         if (checkInput(input) == 0) {
-            if (checkValidMove(input[0], mazePtr, playerPtr) == 4) {
+            gameOver = checkValidMove(input[0], mazePtr, playerPtr);
+            if (gameOver == 4) {
                 // Deallocates memory
                 for (int i = 0; i < maze.rows; i++) {
                     free(maze.data[i]);
@@ -362,15 +360,6 @@ int main(int argc, char *argv[]) {
         }
         printf("\n");
     }
-    
-    // User inputted Q to exit the program.
-    printf("Shutting down program\n");
-    
-    // Deallocates memory
-    for (int i = 0; i < maze.rows; i++) {
-        free(maze.data[i]);
-    }
-    free(maze.data);
     
     return 0;
 }
